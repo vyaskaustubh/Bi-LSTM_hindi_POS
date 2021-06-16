@@ -3,9 +3,6 @@ import numpy as np
 import os
 
 files = os.listdir('hindi/')
-
-# In case your system can't handle all 500 samples
-# set the number of samples to a reasonable number like 20
 n_sample_files = len(files)
 
 print('TOTAL NO. OF FILES ', len(files), '\n')
