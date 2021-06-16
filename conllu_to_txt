@@ -1,0 +1,59 @@
+import os
+import pandas as pd
+from time import time
+
+print('Downloading Hindi Treebank....')
+!git clone https://github.com/UniversalDependencies/UD_Hindi
+
+
+start = time()
+file_path = './UD_Hindi/hi_hdtb-ud-train.conllu' # path where your .conllu file is located
+with open(file_path, 'r', encoding='utf-8') as file:
+    file_prefix = file_path.split('.')[0] + '_'
+    doc_id = ''
+    sent_id = ''
+    records = list()
+    for line in file:
+        if len(line) > 1 :
+            if line[0] == '#':
+                line = line.split('=')
+                if 'newdoc' in line[0]:
+                    doc_id = file_prefix + line[1].strip()
+                elif 'sent_id' in line[0]:
+                    sent_id = line[1].strip()
+            else:
+                info = line.split('\t')
+                if len(info) == 10:
+                    records.append([doc_id, sent_id] + [x.strip() for x in info])
+end = time()
+print("Time elapsed:", end-start, "seconds")
+
+df = pd.DataFrame(records, columns=['DOC_NO', 'SENT_NO', 'ID', 'WORD','LEMMA','UPOS', 'XPOS', 'FEAT','HEAD', 'DEPREL', 'DEPS', 'MISC'])
+df.head(25)
+
+sentence = []
+
+for index, row in df.iterrows():
+    if (row['WORD'] != '।'):
+      sentence.append(row['WORD'] + '/' + row['UPOS'] + ' ')
+      #print(sentence)
+      #print(row['WORD']+'\t' + row['UPOS'])
+    elif (row['WORD'] == '।'):
+      sentence.append(row['WORD'] + '/' + row['UPOS'])
+      
+print(sentence)
+
+def convert(s):
+    new = "" 
+    for x in s:
+        new = new + x  
+    return new
+ax = convert(sentence)
+print(ax)
+dev = ax.replace ('।/PUNCT', '।/PUNCT\n')
+
+f = open('train-BiLSTM.txt','wt')
+n = f.write(dev)
+f.close()
+
+
